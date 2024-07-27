@@ -1,5 +1,7 @@
 # retryable
 
+[![](https://godoc.org/github.com/raniellyferreira/go-retryable?status.svg)](https://godoc.org/github.com/raniellyferreira/go-retryable) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/github.com/raniellyferreira/go-retryable)](https://goreportcard.com/report/github.com/raniellyferreira/go-retryable)
+
 ## Introduction
 
 The retryable package provides a robust set of functions designed to simplify the retry logic in your Go applications. Whether you're dealing with transient network issues, intermittent service failures, or any situation where an operation might need to be attempted multiple times before it succeeds, retryable has got you covered.
