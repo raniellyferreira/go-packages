@@ -33,7 +33,7 @@ func MustRetry[T any](fn func() (T, error)) (T, error) {
 		if err == nil {
 			return result, nil
 		}
-		logPrintf("Attempt %d/%d failed: %v. Retrying in %v...\n", attempt, DefaultMaxAttempts, err, DefaultDelay)
+		logPrintf("Attempt %d/%d failed: %v. Retrying in %v...", attempt, DefaultMaxAttempts, err, DefaultDelay)
 		time.Sleep(DefaultDelay)
 	}
 	return result, err // Return the last error encountered
@@ -55,7 +55,7 @@ func MustRetryWithCustomCheck[T any](fn func() (T, error), isRetryable func(erro
 			return result, err // Do not retry if the error is not retryable.
 		}
 
-		logPrintf("Attempt %d/%d failed with an error: %v. Retrying in %v...\n", attempt, DefaultMaxAttempts, err, DefaultDelay)
+		logPrintf("Attempt %d/%d failed with an error: %v. Retrying in %v...", attempt, DefaultMaxAttempts, err, DefaultDelay)
 		time.Sleep(DefaultDelay)
 	}
 	return result, err // Return the last error encountered.
@@ -77,7 +77,7 @@ func RetryWithCustomCheck[T any](fn func() (T, error), maxAttempts int, delay ti
 			return result, err // Return immediately if the error is not retryable.
 		}
 
-		logPrintf("Attempt %d/%d failed with an error: %v. Retrying in %v...\n", attempt, maxAttempts, err, delay)
+		logPrintf("Attempt %d/%d failed with an error: %v. Retrying in %v...", attempt, maxAttempts, err, delay)
 		time.Sleep(delay)
 	}
 	return result, err // Last error encountered.
@@ -99,7 +99,7 @@ func RetryWithNonRetryableErrors[T any](fn func() (T, error), maxAttempts int, d
 			return result, err // Return immediately on a non-retryable error.
 		}
 
-		logPrintf("Attempt %d/%d failed with an error: %v. Retrying in %v...\n", attempt, maxAttempts, err, delay)
+		logPrintf("Attempt %d/%d failed with an error: %v. Retrying in %v...", attempt, maxAttempts, err, delay)
 		time.Sleep(delay)
 	}
 	return result, err // Last error encountered.
@@ -121,7 +121,7 @@ func RetryWithRetryableErrors[T any](fn func() (T, error), maxAttempts int, dela
 			return result, err
 		}
 
-		logPrintf("Attempt %d/%d failed with a retryable error: %v. Retrying in %v...\n", attempt, maxAttempts, err, delay)
+		logPrintf("Attempt %d/%d failed with a retryable error: %v. Retrying in %v...", attempt, maxAttempts, err, delay)
 		time.Sleep(delay)
 	}
 	return result, err // Return the last error encountered.
@@ -137,7 +137,7 @@ func RetryAlways[T any](fn func() (T, error), maxAttempts int, delay time.Durati
 		if err == nil {
 			return result, nil
 		}
-		logPrintf("Attempt %d/%d failed: %v. Retrying in %v...\n", attempt, maxAttempts, err, delay)
+		logPrintf("Attempt %d/%d failed: %v. Retrying in %v...", attempt, maxAttempts, err, delay)
 		time.Sleep(delay)
 	}
 	return result, err // Return the last error encountered
