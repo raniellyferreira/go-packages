@@ -26,15 +26,21 @@ func SetLoggerWriter(writer func(string, ...interface{})) {
 // MustRetry executes a function until it succeeds or the maximum number of attempts is reached.
 // It uses the global variables DefaultMaxAttempts and DefaultDelay for the retry configuration.
 func MustRetry[T any](fn func() (T, error)) (T, error) {
+	return Retry(fn, DefaultMaxAttempts, DefaultDelay)
+}
+
+// Retry attempts to execute the provided function up to a maximum number of times, pausing with a delay between each try, regardless of the error type.
+// It's a relentless retry strategy that stops only when a success is achieved or the maxAttempts are exhausted.
+func Retry[T any](fn func() (T, error), maxAttempts int, delay time.Duration) (T, error) {
 	var result T
 	var err error
-	for attempt := 1; attempt <= DefaultMaxAttempts; attempt++ {
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
 		result, err = fn()
 		if err == nil {
 			return result, nil
 		}
-		logPrintf("Attempt %d/%d failed: %v. Retrying in %v...", attempt, DefaultMaxAttempts, err, DefaultDelay)
-		time.Sleep(DefaultDelay)
+		logPrintf("Attempt %d/%d failed: %v. Retrying in %v...", attempt, maxAttempts, err, delay)
+		time.Sleep(delay)
 	}
 	return result, err // Return the last error encountered
 }
@@ -42,23 +48,7 @@ func MustRetry[T any](fn func() (T, error)) (T, error) {
 // MustRetryWithCustomCheck executes a function until it succeeds, the maximum number of attempts is reached,
 // or the provided custom check function returns false indicating that the error is not retryable.
 func MustRetryWithCustomCheck[T any](fn func() (T, error), isRetryable func(error) bool) (T, error) {
-	var result T
-	var err error
-	for attempt := 1; attempt <= DefaultMaxAttempts; attempt++ {
-		result, err = fn()
-		if err == nil {
-			return result, nil
-		}
-
-		// Use the provided function to decide if we should retry.
-		if !isRetryable(err) {
-			return result, err // Do not retry if the error is not retryable.
-		}
-
-		logPrintf("Attempt %d/%d failed with an error: %v. Retrying in %v...", attempt, DefaultMaxAttempts, err, DefaultDelay)
-		time.Sleep(DefaultDelay)
-	}
-	return result, err // Return the last error encountered.
+	return RetryWithCustomCheck(fn, DefaultMaxAttempts, DefaultDelay, isRetryable)
 }
 
 // RetryWithCustomCheck provides a flexible retry mechanism, allowing custom logic to determine retryable errors.
@@ -83,6 +73,12 @@ func RetryWithCustomCheck[T any](fn func() (T, error), maxAttempts int, delay ti
 	return result, err // Last error encountered.
 }
 
+// MustRetryWithNonRetryableErrors attempts to execute the provided function until it succeeds,
+// the maximum number of attempts is reached, or a non-retryable error is encountered.
+func MustRetryWithNonRetryableErrors[T any](fn func() (T, error), nonRetryableErrors []string) (T, error) {
+	return RetryWithNonRetryableErrors(fn, DefaultMaxAttempts, DefaultDelay, nonRetryableErrors)
+}
+
 // RetryWithNonRetryableErrors gracefully handles retry logic for functions that may fail with retryable errors.
 // It supports custom delays and distinguishes between errors that should halt retries.
 func RetryWithNonRetryableErrors[T any](fn func() (T, error), maxAttempts int, delay time.Duration, nonRetryableErrors []string) (T, error) {
@@ -103,6 +99,12 @@ func RetryWithNonRetryableErrors[T any](fn func() (T, error), maxAttempts int, d
 		time.Sleep(delay)
 	}
 	return result, err // Last error encountered.
+}
+
+// MustRetryWithRetryableErrors attempts to execute the provided function until it succeeds,
+// the maximum number of attempts is reached, or a non-retryable error is encountered.
+func MustRetryWithRetryableErrors[T any](fn func() (T, error), retryableErrors []string) (T, error) {
+	return RetryWithRetryableErrors(fn, DefaultMaxAttempts, DefaultDelay, retryableErrors)
 }
 
 // RetryWithRetryableErrors executes a function until it succeeds, the maximum number of attempts is reached,
@@ -127,27 +129,11 @@ func RetryWithRetryableErrors[T any](fn func() (T, error), maxAttempts int, dela
 	return result, err // Return the last error encountered.
 }
 
-// RetryAlways attempts to execute the provided function up to a maximum number of times, pausing with a delay between each try, regardless of the error type.
-// It's a relentless retry strategy that stops only when a success is achieved or the maxAttempts are exhausted.
-func RetryAlways[T any](fn func() (T, error), maxAttempts int, delay time.Duration) (T, error) {
-	var result T
-	var err error
-	for attempt := 1; attempt <= maxAttempts; attempt++ {
-		result, err = fn()
-		if err == nil {
-			return result, nil
-		}
-		logPrintf("Attempt %d/%d failed: %v. Retrying in %v...", attempt, maxAttempts, err, delay)
-		time.Sleep(delay)
-	}
-	return result, err // Return the last error encountered
-}
-
 // ContainsError checks if the error message contains any of the substrings
 // in the list of errors allowed for retrying.
-func ContainsError(err error, retryableErrors []string) bool {
-	for _, retryableError := range retryableErrors {
-		if strings.Contains(err.Error(), retryableError) {
+func ContainsError(err error, listErrors []string) bool {
+	for _, strErr := range listErrors {
+		if strings.Contains(err.Error(), strErr) {
 			return true
 		}
 	}

@@ -68,7 +68,7 @@ func TestRetryWithNonRetryableErrors(t *testing.T) {
 		return false, errors.New("fatal error")
 	}
 
-	result, err := retryable.RetryWithNonRetryableErrors(fn, 3, 1*time.Millisecond, nonRetryableErrors)
+	result, err := retryable.MustRetryWithNonRetryableErrors(fn, nonRetryableErrors)
 	if err == nil || err.Error() != "fatal error" {
 		t.Errorf("Expected non-retryable error, got %v", err)
 	}
@@ -88,13 +88,13 @@ func TestRetryWithRetryableErrors(t *testing.T) {
 		return true, nil
 	}
 
-	result, err := retryable.RetryWithRetryableErrors(fn, 3, 1*time.Millisecond, retryableErrors)
+	result, err := retryable.MustRetryWithRetryableErrors(fn, retryableErrors)
 	if err != nil || !result {
 		t.Errorf("Expected successful retry on retryable error, got %v with error %v", result, err)
 	}
 }
 
-func TestRetryAlways(t *testing.T) {
+func TestRetry(t *testing.T) {
 	var attempt int
 	fn := func() (int, error) {
 		attempt++
@@ -105,7 +105,7 @@ func TestRetryAlways(t *testing.T) {
 	}
 
 	expected := 4
-	result, err := retryable.RetryAlways(fn, 5, 1*time.Millisecond)
+	result, err := retryable.Retry(fn, 5, 1*time.Millisecond)
 	if err != nil || result != expected {
 		t.Errorf("Expected result %d after retries, got %d with error %v", expected, result, err)
 	}
@@ -156,13 +156,13 @@ func TestRetryWithCustomCheckNonRetryableError(t *testing.T) {
 	}
 }
 
-// TestRetryAlwaysFailure tests the RetryAlways function where it always fails.
-func TestRetryAlwaysFailure(t *testing.T) {
+// TestRetryFailure tests the Retry function where it always fails.
+func TestRetryFailure(t *testing.T) {
 	fn := func() (bool, error) {
 		return false, errors.New("error")
 	}
 
-	_, err := retryable.RetryAlways(fn, 3, 1*time.Millisecond)
+	_, err := retryable.Retry(fn, 3, 1*time.Millisecond)
 	if err == nil {
 		t.Errorf("Expected an error after maximum attempts, got nil")
 	}
