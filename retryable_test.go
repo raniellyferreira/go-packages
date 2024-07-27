@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/raniellyferreira/go-packages/retryable"
+	"github.com/raniellyferreira/go-retryable"
 )
 
 func TestMustRetrySuccess(t *testing.T) {

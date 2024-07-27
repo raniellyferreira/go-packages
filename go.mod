@@ -1,3 +1,3 @@
-module github.com/raniellyferreira/go-packages
+module github.com/raniellyferreira/go-retryable
 
 go 1.22
